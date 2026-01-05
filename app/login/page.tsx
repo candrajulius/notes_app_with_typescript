@@ -1,23 +1,31 @@
 "use client";
 
-import { Button, Checkbox, Form, Input, Typography  } from "antd";
-const { Title, Text } = Typography;
+import { Form, Input, Button, Checkbox, Typography } from "antd";
 import {
   UserOutlined,
   LockOutlined,
 } from "@ant-design/icons";
 
+const { Title, Text } = Typography;
+
 export default function LoginPage() {
-  return <div className="flex min-h-screen">
-    {/* Left Section */}
-    <div className="relative hidden w-1/2 items-center justify-center bg-gradient-to-br from-yellow-400 via-orange-400 to-pink-500 md:flex">
+//   const onFinish = (values: any) => {
+//     console.log("Login data:", values);
+//   };
+
+  return (
+    <div className="flex min-h-screen">
+      {/* LEFT SIDE */}
+      <div className="relative hidden w-1/2 items-center justify-center bg-gradient-to-br from-yellow-400 via-orange-400 to-pink-500 md:flex">
         <div className="flex flex-col items-center text-white">
           <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full border-4 border-white">
             <span className="text-4xl font-bold">W</span>
           </div>
           <h1 className="text-3xl font-semibold">Wavy.</h1>
         </div>
-       { /* RIGHT SIDE */}
+      </div>
+
+      {/* RIGHT SIDE */}
       <div className="flex w-full items-center justify-center bg-white md:w-1/2">
         <div className="w-full max-w-md px-8">
           <Title level={2} className="!mb-2 !text-pink-500">
@@ -97,5 +105,5 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
-  </div>
+  );
 }
