@@ -1,44 +1,43 @@
+
 "use client";
 
-import { Form, Button, Checkbox, Typography, message } from "antd";
+import { Form, Button, Typography, message } from "antd";
 import {
   UserOutlined,
   LockOutlined,
+  MailOutlined,
 } from "@ant-design/icons";
 import FormInput from "../component/FormInput";
 import FormInputPassword from "../component/FormInputPassword";
+import AuthFooterText from "../component/AuthFooterText";
+import { register } from "../utils/network_data";
 import { useRouter } from "next/navigation";
-import { login, putAccessToken } from "../utils/network_data";
-import Link from "next/link";
 
 const { Title, Text } = Typography;
 
-type LoginFormValues = {
+type RegisterFormValues = {
+  name: string;
   email: string;
   password: string;
-};
+}
 
-export default function LoginPage() {
+export default function RegisterPage() {
 
   const router = useRouter();
 
-  const onFinish = async (values: LoginFormValues) => {
-    const result = await login(values);
-    if(result.error)
-    {
-      message.error(result.message || "Login failed!");
+  const onFinish = async (values: RegisterFormValues) => {
+    const result = await register(values);
+     if (result.error) {
+      message.error(result.message || "Registration failed!");
       return;
     }
 
-    if( result.data?.accessToken){
-      putAccessToken(result.data.accessToken);
-      document.cookie = `access_token=${result.data.accessToken}; path=/;`;
-    }
-    message.success("Login successful!");
-    router.push("/notes");
-  };
+  
+    message.success("Registration successful! Please login.");
+    router.push("/login");
+  }
 
-  return (
+   return (
     <div className="flex min-h-screen">
       {/* LEFT SIDE */}
       <div className="relative hidden w-1/2 items-center justify-center bg-gradient-to-br from-yellow-400 via-orange-400 to-pink-500 md:flex">
@@ -57,27 +56,22 @@ export default function LoginPage() {
             Get started!
           </Title>
           <Text type="secondary">
-            Login Now To Notes  APP
+            Create your account now
           </Text>
 
           <Form
             layout="vertical"
             className="mt-8"
             onFinish={onFinish}
-            // onFinish={onFinish}
           >
             {/* USERNAME */}
-            <FormInput name="email" label="Email" placeholder="Enter your email" rules={[{ required: true, message: "Email wajib diisi" },{type: 'email', message: 'Email tidak valid'}]} prefix={<UserOutlined />} />
+            <FormInput name="name" label="Name" placeholder="Enter your name" rules={[{ required: true, message: "Name wajib diisi" }]} prefix={<UserOutlined />} />
+
+            {/* USERNAME */}
+            <FormInput name="email" label="Email" placeholder="Enter your email" rules={[{ required: true, message: "Email wajib diisi" },{type: 'email', message: 'Email tidak valid'}]} prefix={<MailOutlined />} />
 
             {/* PASSWORD */}
             <FormInputPassword name="password" label="Password" placeholder="Enter your password" rules={[{ required: true, message: "Password wajib diisi" }, {min: 8, message: "Password minimal 8 karakter"}]} prefix={<LockOutlined />} />
-
-            {/* REMEMBER + FORGOT */}
-            <div className="mb-4 flex items-center justify-between">
-              <Form.Item name="remember" valuePropName="checked" noStyle>
-                <Checkbox>Remember me</Checkbox>
-              </Form.Item>
-            </div>
 
             {/* BUTTON */}
             <Form.Item>
@@ -99,19 +93,12 @@ export default function LoginPage() {
                   hover:!text-black active:!text-black focus-visible:!text-black
                 "
               >
-                Login
+                Register
               </Button>
             </Form.Item>
 
             {/* SIGN UP */}
-            <div className="text-center">
-              <Text type="secondary">
-                Don’t have an account?
-              </Text>{" "}
-              <Link href="/register" className="font-medium text-pink-500 hover:underline">
-                Sign up
-              </Link>
-            </div>
+            <AuthFooterText prompt="Already have an account?" actionText="Sign in" actionLink="/login"/>
           </Form>
         </div>
       </div>

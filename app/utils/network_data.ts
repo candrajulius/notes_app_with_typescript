@@ -1,4 +1,4 @@
-import base_url from "./constant";
+import { base_url } from "./constant";
 
 function getAccessToken(): string | null {
     return localStorage.getItem('access_token');
@@ -80,7 +80,7 @@ async function register(registerPayload: RegisterPayload): Promise<ApiResponse> 
     return {error: false, message: responseJson.message, data: null};
 }
 
-async function login(loginPayload: LoginPayload): Promise<ApiResponse>{
+async function login(loginPayload: LoginPayload): Promise<ApiResponse<{accessToken: string}>> {
     const response = await fetch(`${base_url}/login`, {
         method: 'POST',
         headers: {
@@ -94,7 +94,6 @@ async function login(loginPayload: LoginPayload): Promise<ApiResponse>{
         return {
             error: true,
             message: responseJson.message,
-            data: null,
         };
     }
     return {error: false, message: responseJson.message, data: responseJson.data};
@@ -130,7 +129,7 @@ async function getNotes(): Promise<ApiResponse<Note[]>>{
     const response = await fetchWithToken(`${base_url}/notes`);
     const responseJson = await response.json();
     if (responseJson.status !== 'success'){
-        return {error: true, message: responseJson.message, data: []};
+        return {error: true, message: responseJson.message};
     }
     return {error: false, message: responseJson.message, data: responseJson.data};
 }
