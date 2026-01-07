@@ -47,7 +47,7 @@ export default function NotesPage() {
 
   if (isLoading) return <Loading />;
 
-
+  
   return (
     <Layout className="min-h-screen">
       <AppHeader user={profile?.name || "Not Found"} />

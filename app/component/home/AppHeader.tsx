@@ -1,8 +1,10 @@
 "use client";
 
-import { Layout, Avatar, Dropdown, MenuProps } from "antd";
+import { Layout, Avatar, Dropdown, MenuProps, message } from "antd";
 import { LogoutOutlined, UserOutlined } from "@ant-design/icons";
 import { useState } from "react";
+import { clearToken, putAccessToken } from "@/app/utils/network_data";
+import { useActionRouter } from "@/app/hooks/useActionRouter";
 
 const { Header } = Layout;
 
@@ -10,6 +12,17 @@ export default function AppHeader({user}: {user: string}) {
 
   const [open, setOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+
+  const {onSuccess} = useActionRouter();
+
+  const handleLogout = () => {
+    clearToken();
+    onSuccess({
+      successMessage: "Logout successfull!",
+      redirectTo: "/login",
+    });
+    
+  }
 
 
   const menuItems: MenuProps["items"] = [
@@ -24,10 +37,7 @@ export default function AppHeader({user}: {user: string}) {
     danger: true,
     icon: <LogoutOutlined />,
     label: "Logout",
-    onClick: () => {
-      document.cookie = "auth_token=; Max-Age=0; path=/;";
-      window.location.href = "/login";
-    }
+    onClick: () => handleLogout(),
   },
 ];
 

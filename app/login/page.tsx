@@ -1,15 +1,15 @@
 "use client";
 
-import { Form, Button, Checkbox, Typography, message } from "antd";
+import { Form, Button, Typography, message } from "antd";
 import {
   UserOutlined,
   LockOutlined,
 } from "@ant-design/icons";
 import FormInput from "../component/FormInput";
 import FormInputPassword from "../component/FormInputPassword";
-import { useRouter } from "next/navigation";
 import { login, putAccessToken } from "../utils/network_data";
 import Link from "next/link";
+import { useActionRouter } from "../hooks/useActionRouter";
 
 const { Title, Text } = Typography;
 
@@ -20,7 +20,7 @@ type LoginFormValues = {
 
 export default function LoginPage() {
 
-  const router = useRouter();
+  const {onSuccess} = useActionRouter();
 
   const onFinish = async (values: LoginFormValues) => {
     const result = await login(values);
@@ -30,12 +30,14 @@ export default function LoginPage() {
       return;
     }
 
-    if( result.data?.accessToken){
-      putAccessToken(result.data.accessToken);
-      document.cookie = `access_token=${result.data.accessToken}; path=/;`;
+    const token = result.data?.accessToken;
+
+    if(token)
+    {
+      putAccessToken(token)
+      document.cookie = `access_token=${token}; path=/;`;
     }
-    message.success("Login successful!");
-    router.push("/notes");
+    onSuccess({successMessage: result.message, redirectTo: "/notes"});
   };
 
   return (
@@ -71,13 +73,6 @@ export default function LoginPage() {
 
             {/* PASSWORD */}
             <FormInputPassword name="password" label="Password" placeholder="Enter your password" rules={[{ required: true, message: "Password wajib diisi" }, {min: 8, message: "Password minimal 8 karakter"}]} prefix={<LockOutlined />} />
-
-            {/* REMEMBER + FORGOT */}
-            <div className="mb-4 flex items-center justify-between">
-              <Form.Item name="remember" valuePropName="checked" noStyle>
-                <Checkbox>Remember me</Checkbox>
-              </Form.Item>
-            </div>
 
             {/* BUTTON */}
             <Form.Item>

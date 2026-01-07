@@ -9,6 +9,14 @@ function putAccessToken(token: string): void {
 }
 
 
+function clearToken()
+{
+    localStorage.removeItem("access_token");
+    // Hapus cookie
+    document.cookie = "access_token=; path=/; max-age=0";
+}
+
+
 export interface ApiResponse<T = null> {
     error: boolean;
     data?: T;
@@ -201,4 +209,5 @@ export {
     archivedNote,
     unArchivedNote,
     deleteNote,
+    clearToken,
 }
