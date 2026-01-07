@@ -10,7 +10,6 @@ const { Header } = Layout;
 
 export default function AppHeader({user}: {user: string}) {
 
-  const [open, setOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
 
   const {onSuccess} = useActionRouter();

@@ -1,19 +1,29 @@
 "use client";
 
-import { Button, Col, Layout, Row } from "antd";
+import { Button, Col, Layout, message, Row } from "antd";
 import AppHeader from "../component/home/AppHeader";
 import NoteCard from "../component/home/NoteCard";
-import { useQuery } from "@tanstack/react-query";
-import { getNotes, getArchivedNotes, Note, getProfile } from "../utils/network_data";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { getNotes, getArchivedNotes, Note, getProfile, archivedNote, unArchivedNote } from "../utils/network_data";
 import Loading from "../component/Loading";
+import { useState } from "react";
+import { PlusOutlined } from "@ant-design/icons";
+import AddNotesModal from "../component/AddNotesModal";
+import { networkInterfaces } from "os";
+import { useActionRouter } from "../hooks/useActionRouter";
 
 const { Content } = Layout;
 
 export default function NotesPage() {
+
+   const [open, setOpen] = useState(false);
+
+   const queryClient = useQueryClient();
+
   const {
     data: notes = [],
     isLoading: isNotesLoading,
-  } = useQuery<Note[], Error>({
+  } = useQuery({
     queryKey: ["notes"],
     queryFn: async () => {
       const response = await getNotes();
@@ -23,9 +33,9 @@ export default function NotesPage() {
   });
 
   const {
-    data: archivedNotes = [],
+    data: archiveNotes = [],
     isLoading: isArchivedLoading,
-  } = useQuery<Note[], Error>({
+  } = useQuery({
     queryKey: ["notes", "archived"],
     queryFn: async () => {
       const response = await getArchivedNotes();
@@ -43,6 +53,36 @@ export default function NotesPage() {
     },
   })
 
+  const archivedMutation = useMutation({
+    mutationFn: archivedNote,
+    onSuccess: (res) => {
+       message.success(res.message);
+       queryClient.invalidateQueries({ queryKey: ["notes"] });
+    },
+    onError: (err) => {
+      message.error(err.message);
+    }
+  });
+
+  const unArchivedMutation = useMutation({
+    mutationFn: unArchivedNote,
+    onSuccess: (res) => {
+      message.success(res.message);
+      queryClient.invalidateQueries({queryKey: ["notes"]});
+    },
+    onError: (err) => {
+      message.error(err.message);
+    }
+  });
+
+  const handleToggleArchive = (id: string, archived: boolean) => {
+    if(archived){
+      unArchivedMutation.mutate(id);
+    }else{
+      archivedMutation.mutate(id);
+    }
+  };
+
   const isLoading = isNotesLoading || isArchivedLoading;
 
   if (isLoading) return <Loading />;
@@ -54,16 +94,17 @@ export default function NotesPage() {
 
       <Content className="bg-gray-100 p-6">
         {/* MY NOTES */}
+
         <section>
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold">My Notes</h2>
-            <Button type="primary">Add Note</Button>
+            <Button icon={<PlusOutlined />} type="primary" onClick={() => setOpen(true)}>Add Note</Button>
           </div>
 
          <Row gutter={[16, 16]}>
             {notes.map((note) => (
               <Col key={note.id} xs={24} sm={12} lg={8}>
-                <NoteCard title={note.title} content={note.body} archived={note.archived} />
+                <NoteCard title={note.title} content={note.body} archived={note.archived} onToggleArchive={() => handleToggleArchive(note.id,note.archived)} />
               </Col>
             ))}
           </Row>
@@ -72,16 +113,16 @@ export default function NotesPage() {
         {/* ARCHIVED NOTES */}
         <section className="mt-10">
           <h2 className="mb-4 text-lg font-semibold">Archived Notes</h2>
-
           <Row gutter={[16, 16]}>
-            {archivedNotes.map((note) => (
+            {archiveNotes.map((note) => (
               <Col key={note.id} xs={24} sm={12} lg={8}>
-                <NoteCard title={note.title} content={note.body} archived={note.archived} />
+                <NoteCard title={note.title} content={note.body} archived={note.archived} onToggleArchive={() => handleToggleArchive(note.id,note.archived)} />
               </Col>
             ))}
           </Row>
         </section>
       </Content>
+      <AddNotesModal open={open} onClose={() => setOpen(false)}/>
     </Layout>
   );
 }

@@ -11,7 +11,8 @@ function putAccessToken(token: string): void {
 
 function clearToken()
 {
-    localStorage.removeItem("access_token");
+    putAccessToken("")
+    sessionStorage.removeItem("access_token")
     // Hapus cookie
     document.cookie = "access_token=; path=/; max-age=0";
 }
@@ -35,7 +36,6 @@ export interface LoginPayload{
 }
 
 export interface User{
-    id: string;
     name: string; 
     email: string;
 }
