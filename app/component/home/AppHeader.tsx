@@ -5,6 +5,7 @@ import { LogoutOutlined, UserOutlined } from "@ant-design/icons";
 import { useState } from "react";
 import { clearToken, putAccessToken } from "@/app/utils/network_data";
 import { useActionRouter } from "@/app/hooks/useActionRouter";
+import ProfileModal from "../ProfileModal";
 
 const { Header } = Layout;
 
@@ -22,7 +23,6 @@ export default function AppHeader({user}: {user: string}) {
     });
     
   }
-
 
   const menuItems: MenuProps["items"] = [
   {
@@ -56,6 +56,8 @@ export default function AppHeader({user}: {user: string}) {
           <Avatar icon={<UserOutlined />}/>
         </div>
       </Dropdown>
+
+      <ProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} />
     </Header>
   );
 }

@@ -7,6 +7,11 @@ const login = 'Login';
 
 const BASE = "Notes App - "
 
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("id-ID")
+};
+
 
 export{
   base_url,
@@ -14,4 +19,5 @@ export{
   register,
   login,
   BASE,
+  formatDate,
 };

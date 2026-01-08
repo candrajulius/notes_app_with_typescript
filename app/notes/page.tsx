@@ -4,21 +4,33 @@ import { Button, Col, Layout, message, Row } from "antd";
 import AppHeader from "../component/home/AppHeader";
 import NoteCard from "../component/home/NoteCard";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getNotes, getArchivedNotes, Note, getProfile, archivedNote, unArchivedNote } from "../utils/network_data";
+import { getNotes, getArchivedNotes, Note, getProfile, archivedNote, unArchivedNote, getSingleNotes } from "../utils/network_data";
 import Loading from "../component/Loading";
 import { useState } from "react";
 import { PlusOutlined } from "@ant-design/icons";
 import AddNotesModal from "../component/AddNotesModal";
-import { networkInterfaces } from "os";
-import { useActionRouter } from "../hooks/useActionRouter";
+import ShowNoteModal from "../component/ShowNoteModal";
 
 const { Content } = Layout;
 
 export default function NotesPage() {
 
    const [open, setOpen] = useState(false);
+   const [modalOpen, setModalOpen] = useState(false);
+   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
 
    const queryClient = useQueryClient();
+
+  // Query Single Notes
+  const {data: selectedNote, isLoading: isSingleNoteLoading} = useQuery({
+    queryKey: ["note", selectedNoteId],
+    queryFn: async () => {
+      const res = await getSingleNotes(selectedNoteId!);
+      if(res.error){ message.error(res.message)};
+      return res.data;
+    },
+    enabled: !!selectedNoteId, // hanya jalan kalau ID ada
+  });
 
   const {
     data: notes = [],
@@ -83,10 +95,24 @@ export default function NotesPage() {
     }
   };
 
+  const handleDeleteNote = () => {
+     queryClient.invalidateQueries({ queryKey: ["notes"] });
+    queryClient.invalidateQueries({ queryKey: ["notes", "archived"] });
+  };
+
+  const openModal = (id: string) => {
+    setSelectedNoteId(id);
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setSelectedNoteId(null);
+  }
+
   const isLoading = isNotesLoading || isArchivedLoading;
 
   if (isLoading) return <Loading />;
-
   
   return (
     <Layout className="min-h-screen">
@@ -104,7 +130,7 @@ export default function NotesPage() {
          <Row gutter={[16, 16]}>
             {notes.map((note) => (
               <Col key={note.id} xs={24} sm={12} lg={8}>
-                <NoteCard title={note.title} content={note.body} archived={note.archived} onToggleArchive={() => handleToggleArchive(note.id,note.archived)} />
+                <NoteCard title={note.title} content={note.body} archived={note.archived} onToggleArchive={() => handleToggleArchive(note.id,note.archived)} onClick={() => openModal(note.id)}/>
               </Col>
             ))}
           </Row>
@@ -116,13 +142,24 @@ export default function NotesPage() {
           <Row gutter={[16, 16]}>
             {archiveNotes.map((note) => (
               <Col key={note.id} xs={24} sm={12} lg={8}>
-                <NoteCard title={note.title} content={note.body} archived={note.archived} onToggleArchive={() => handleToggleArchive(note.id,note.archived)} />
+                <NoteCard title={note.title} content={note.body} archived={note.archived} onToggleArchive={() => handleToggleArchive(note.id,note.archived)} onClick={() => openModal(note.id)} />
               </Col>
             ))}
           </Row>
         </section>
       </Content>
       <AddNotesModal open={open} onClose={() => setOpen(false)}/>
+      {selectedNote && (
+        <ShowNoteModal 
+        id={selectedNote.id}
+        open={modalOpen} 
+        onClose={closeModal} 
+        title={selectedNote.title} 
+        body={selectedNote.body}
+        owner={selectedNote.owner}
+        createdAt={selectedNote.createdAt}
+        onDelete={handleDeleteNote} />
+      )}
     </Layout>
   );
 }

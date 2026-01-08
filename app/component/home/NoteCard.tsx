@@ -1,12 +1,13 @@
 "use client";
 
-import { Button, Card } from "antd";
+import { Button, Card, Flex } from "antd";
 
 interface NoteCardProps {
   title: string;
   content: string;
   archived: boolean;
   onToggleArchive?: () => void;
+  onClick?: () => void;
 }
 
 export default function NoteCard({
@@ -14,6 +15,7 @@ export default function NoteCard({
   content,
   archived,
   onToggleArchive,
+  onClick,
 }: NoteCardProps) {
   return (
     <Card
@@ -31,16 +33,12 @@ export default function NoteCard({
         {content}
       </p>
 
-      <Button
+      <div style={{display: "flex", justifyContent: "flex-end", gap: 4}}>
+        <Button
         onClick={onToggleArchive}
         style={{
-          position: "absolute",
-          right: 24,
-          bottom: 24,
           borderRadius: 999,
           paddingInline: 22,
-          height: 36,
-          fontWeight: 600,
           backgroundColor: archived ? "#9CA3AF" : "#FB923C",
           borderColor: archived ? "#9CA3AF" : "#FB923C",
           color: "#fff",
@@ -48,6 +46,29 @@ export default function NoteCard({
       >
         {archived ? "Unarchive" : "Archive"}
       </Button>
+
+        <Button
+          type="primary"
+          onClick={onClick}
+          style={{
+            borderRadius: 999,
+            paddingInline: 22
+          }}
+          // style={{
+          //   position: "absolute",
+          //   right: 24,
+          //   bottom: 24,
+          //   borderRadius: 999,
+          //   paddingInline: 22,
+          //   height: 36,
+          //   fontWeight: 600,
+          //   color: "#fff",
+          // }}
+        >
+        Detail
+      </Button>
+
+      </div>
     </Card>
   );
 }
