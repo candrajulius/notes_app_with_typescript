@@ -1,15 +1,17 @@
 "use client";
 
-import { Button, Col, Layout, message, Row } from "antd";
+import { Col, Layout, message, Row, FloatButton } from "antd";
 import AppHeader from "../component/home/AppHeader";
 import NoteCard from "../component/home/NoteCard";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getNotes, getArchivedNotes, Note, getProfile, archivedNote, unArchivedNote, getSingleNotes } from "../utils/network_data";
+import { getNotes, getArchivedNotes, getProfile, archivedNote, unArchivedNote, getSingleNotes, clearToken } from "../utils/network_data";
 import Loading from "../component/Loading";
 import { useState } from "react";
-import { PlusOutlined } from "@ant-design/icons";
+import { LogoutOutlined } from "@ant-design/icons";
 import AddNotesModal from "../component/AddNotesModal";
 import ShowNoteModal from "../component/ShowNoteModal";
+import EmptyNote from "../component/EmptyNote";
+import { useActionRouter } from "../hooks/useActionRouter";
 
 const { Content } = Layout;
 
@@ -19,10 +21,12 @@ export default function NotesPage() {
    const [modalOpen, setModalOpen] = useState(false);
    const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
 
+   const {onSuccess} = useActionRouter();
+
    const queryClient = useQueryClient();
 
   // Query Single Notes
-  const {data: selectedNote, isLoading: isSingleNoteLoading} = useQuery({
+  const {data: selectedNote} = useQuery({
     queryKey: ["note", selectedNoteId],
     queryFn: async () => {
       const res = await getSingleNotes(selectedNoteId!);
@@ -113,10 +117,19 @@ export default function NotesPage() {
   const isLoading = isNotesLoading || isArchivedLoading;
 
   if (isLoading) return <Loading />;
+
+  const handleLogout = () => {
+    clearToken();
+    onSuccess({
+      successMessage: "Logout successfull!",
+      redirectTo: "/login",
+    });
+    
+  }
   
   return (
     <Layout className="min-h-screen">
-      <AppHeader user={profile?.name || "Not Found"} />
+      <AppHeader user={profile?.name || "Not Found"} setOpen={() => setOpen(true)}/>
 
       <Content className="bg-gray-100 p-6">
         {/* MY NOTES */}
@@ -124,30 +137,39 @@ export default function NotesPage() {
         <section>
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold">My Notes</h2>
-            <Button icon={<PlusOutlined />} type="primary" onClick={() => setOpen(true)}>Add Note</Button>
           </div>
 
-         <Row gutter={[16, 16]}>
+          {notes.length === 0 ? (
+            <EmptyNote descriptions="Record My Note Empty"  />
+          ) : (<Row gutter={[16, 16]}>
             {notes.map((note) => (
               <Col key={note.id} xs={24} sm={12} lg={8}>
                 <NoteCard title={note.title} content={note.body} archived={note.archived} onToggleArchive={() => handleToggleArchive(note.id,note.archived)} onClick={() => openModal(note.id)}/>
               </Col>
             ))}
-          </Row>
+          </Row>)}
         </section>
 
         {/* ARCHIVED NOTES */}
         <section className="mt-10">
           <h2 className="mb-4 text-lg font-semibold">Archived Notes</h2>
-          <Row gutter={[16, 16]}>
+          {archiveNotes.length === 0 ? (<EmptyNote descriptions="Record Archive Note Empty" />) : (<Row gutter={[16, 16]}>
             {archiveNotes.map((note) => (
               <Col key={note.id} xs={24} sm={12} lg={8}>
                 <NoteCard title={note.title} content={note.body} archived={note.archived} onToggleArchive={() => handleToggleArchive(note.id,note.archived)} onClick={() => openModal(note.id)} />
               </Col>
             ))}
-          </Row>
+          </Row>)}
         </section>
       </Content>
+
+      <FloatButton
+        icon={<LogoutOutlined />}
+        style={{ backgroundColor: 'red'  }}
+        onClick={handleLogout}
+        tooltip="Logout"
+      />
+
       <AddNotesModal open={open} onClose={() => setOpen(false)}/>
       {selectedNote && (
         <ShowNoteModal 
@@ -160,6 +182,8 @@ export default function NotesPage() {
         createdAt={selectedNote.createdAt}
         onDelete={handleDeleteNote} />
       )}
+
+      
     </Layout>
   );
 }

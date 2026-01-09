@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button, Form, Input, message, Modal } from "antd";
 import { addNotes } from "../utils/network_data";
-import { AlignLeftOutlined, EditFilled, FileOutlined, PlusOutlined } from "@ant-design/icons";
+import { EditFilled, FileOutlined } from "@ant-design/icons";
 
 
 type AddNotesModalProps = {
